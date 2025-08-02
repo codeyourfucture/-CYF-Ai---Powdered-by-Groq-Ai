@@ -6,7 +6,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // ဒီမှာ API key ကို တိုက်ရိုက်ထည့်ထားတယ် (အန္တရာယ်ရှိတာ သတိထားပါ)
-const GROQ_API_KEY = "Bearer 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";
+const GROQ_API_KEY = "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";
 
 app.use(cors());
 app.use(express.json());
