@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Hello, World!</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  </head>
+  <body>
+    <div class="calculator">
+       <input id="display" readonly>
+       <div class="design"></div>
+      <div id="btn-box">
+         <button onclick="appendToDisplay('+')" class="special-btn">+</button>
+         <button onclick="appendToDisplay('1')">1</button>
+         <button onclick="appendToDisplay('2')">2</button>
+         <button onclick="appendToDisplay('3')">3</button>
+         <button onclick="appendToDisplay('-')" class="special-btn">-</button>
+         <button onclick="appendToDisplay('4')">4</button>
+         <button onclick="appendToDisplay('5')">5</button>
+         <button onclick="appendToDisplay('6')">6</button>
+         <button onclick="appendToDisplay('*')" class="special-btn">×</button>
+         <button onclick="appendToDisplay('7')">7</button>
+         <button onclick="appendToDisplay('8')">8</button>
+         <button onclick="appendToDisplay('9')">9</button>
+         <button onclick="appendToDisplay('/')" class="special-btn">÷</button>
+         <button onclick="appendToDisplay('0')">0</button>
+         <button onclick="appendToDisplay('.')">.</button>
+         <button onclick="calculate()" class="super-man">=</button>
+         <button onclick="cleardisplay()" class="clear-btn">C</button>
+         <button onclick="backspace()" class="backspace-btn"><span class="span">⌫</span></button>
+      </div>
+    <div>
+  <div class="footer-social">
+    <a href="https://t.me/MMprogrammer" target="_blank" title="Telegram">
+      <i class="fab fa-telegram"></i>
+    </a>
+    <a href="https://www.tiktok.com/@codeyourfuture0?_t=ZS-8xRy3IcslwP&_r=1" target="_blank" title="TikTok">
+      <i class="fab fa-tiktok"></i>
+    </a>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer-desc">
+    <footer>
+      🇲🇲 Made By 🔥CodeAce (CYF)
+    </footer>
+  </div>
+      <script src="script.js"></script>
+  </body>
+</html>
