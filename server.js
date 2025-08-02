@@ -1,12 +1,12 @@
 import express from "express";
-import dotenv from "dotenv";
 import cors from "cors";
 import fetch from "node-fetch";
 
-dotenv.config();
-
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// ဒီမှာ API key ကို တိုက်ရိုက်ထည့်ထားတယ် (အန္တရာယ်ရှိတာ သတိထားပါ)
+const GROQ_API_KEY = "Bearer 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";
 
 app.use(cors());
 app.use(express.json());
@@ -19,7 +19,7 @@ app.post("/api/chat", async (req, res) => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.GROQ_API_KEY}`
+        "Authorization": GROQ_API_KEY
       },
       body: JSON.stringify({
         model: "llama3-8b-8192",
