@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Groq Chat - Powered by OpenAI</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <nav>
+    <h1>Groq AI Assistant</h1>
+  </nav>
+  <div id="chat"></div>
+  <div id="typing" class="msg ai" style="display:none;">Typing...</div>
+  <div id="input-area">
+    <input id="input" type="text" placeholder="Type your message here..." />
+    <button onclick="send()">Send</button>
+    <button id="mic">🎤</button>
+  </div>
+  <script>
+    const chat = document.getElementById('chat');
+    const input = document.getElementById('input');
+    const typing = document.getElementById('typing');
+    const micBtn = document.getElementById('mic');
+
+    const synth = window.speechSynthesis;
+    const recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recog = recognition ? new recognition() : null;
+    if (recog) recog.lang = 'en-US';
+
+    function escapeHtml(str) {
+      return str.replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;");
+    }
+
+    function formatMarkdown(text) {
+      return text.replace(/```(\w+)?\n([\s\S]*?)```/g, (match, lang, code) => {
+        return `<pre><code class="lang-${lang || 'text'}">${escapeHtml(code)}</code></pre>`;
+      });
+    }
+
+    function addMessage(role, content) {
+      const div = document.createElement('div');
+      div.className = 'msg ' + role;
+      div.innerHTML = content;
+      chat.appendChild(div);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    function saveChat() {
+      localStorage.setItem('groq-chat', chat.innerHTML);
+    }
+
+    function loadChat() {
+      chat.innerHTML = localStorage.getItem('groq-chat') || '';
+    }
+
+    async function send() {
+      const msg = input.value.trim();
+      if (!msg) return;
+      addMessage("user", msg);
+      saveChat();
+      input.value = '';
+      typing.style.display = "block";
+      chat.scrollTop = chat.scrollHeight;
+
+      try {
+        const res = await fetch("/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: msg })
+        });
+
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        const data = await res.json();
+        const reply = data.reply;
+        const formatted = formatMarkdown(reply);
+        typing.style.display = "none";
+        addMessage("ai", formatted);
+        saveChat();
+
+        const utter = new SpeechSynthesisUtterance(reply);
+        synth.speak(utter);
+
+      } catch (err) {
+        typing.style.display = "none";
+        addMessage("ai", "❌ Error: " + err.message);
+        saveChat();
+      }
+    }
+
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter') send();
+    });
+
+    micBtn.addEventListener('click', () => {
+      if (!recog) return alert("Speech Recognition not supported");
+      recog.start();
+      recog.onresult = e => {
+        input.value = e.results[0][0].transcript;
+        send();
+      };
+    });
+
+    window.onload = () => {
+      loadChat();
+      input.focus();
+    };
+  </script>
+</body>
+</html>
