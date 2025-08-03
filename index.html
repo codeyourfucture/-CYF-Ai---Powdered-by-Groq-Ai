@@ -2,11 +2,17 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>CYF Ai - Powdered By Groq AI</title>
+  <title>CYF Ai clone - powered by Groq AI Chat</title>
   <style>
     body {
       margin: 0; padding: 0; font-family: Arial, sans-serif;
       background: #1e1e1e; color: #eee; display: flex; flex-direction: column; height: 100vh;
+    }
+    .nav-bar {
+      background-color: white;
+      color: black;
+      text-align: center;
+      border: solid 2px blue;
     }
     #chat {
       flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px;
@@ -25,6 +31,7 @@
     }
     #input {
       flex: 1; padding: 10px; border: none; border-radius: 6px; font-size: 16px;
+      background-color: #444; color: white;
     }
     button {
       margin-left: 10px; padding: 10px 20px; background-color: #4caf50; color: white;
@@ -36,6 +43,7 @@
   </style>
 </head>
 <body>
+  <div class="nav-bar"><h2>CYF Ai</h2></div>
 
   <div id="chat"></div>
 
@@ -48,7 +56,7 @@
     const chat = document.getElementById('chat');
     const input = document.getElementById('input');
 
-    const API_KEY = "Bearer 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";
+    const API_KEY = "Bearer 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";
 
     function escapeHtml(str) {
       return str.replace(/&/g, "&amp;")
@@ -58,7 +66,58 @@
 
     function formatMarkdown(text) {
       return text.replace(/```(\w+)?\n([\s\S]*?)```/g, (match, lang, code) => {
-        return `<pre><code>${escapeHtml(code)}</code></pre>`;
+        const escapedCode = escapeHtml(code);
+        return `
+          <div style="
+            position: relative; 
+            background: grey; 
+            border: 1.5px solid #4caf50; 
+            border-radius: 8px; 
+            padding: 12px 15px; 
+            margin: 12px 0; 
+            box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
+            font-family: 'Source Code Pro', monospace;
+            font-size: 14px;
+            color: #b5f4a5;
+          ">
+            <button onclick="copyCode(this)" 
+              style="
+                position: absolute; 
+                top: 8px; 
+                right: 8px; 
+                background: white; 
+                border: none; 
+                color:black;
+                padding: 6px 12px; 
+                border-radius: 4px; 
+                cursor: pointer;
+                font-weight: bold;
+                font-size: 13px;
+                user-select: none;
+              ">Copy</button>
+            <pre style="overflow-x: auto; margin: 0;">
+              <code>${escapedCode}</code>
+            </pre>
+          </div>
+        `;
+      });
+    }
+
+    function copyCode(button) {
+      const codeBlock = button.nextElementSibling.querySelector('code');
+      if (!codeBlock) return;
+
+      const text = codeBlock.innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        button.textContent = 'Copied!';
+        setTimeout(() => {
+          button.textContent = 'Copy';
+        }, 1500);
+      }).catch(() => {
+        button.textContent = 'Failed';
+        setTimeout(() => {
+          button.textContent = 'Copy';
+        }, 1500);
       });
     }
 
@@ -69,6 +128,20 @@
       chat.innerHTML += `<div class="msg user">${escapeHtml(msg)}</div>`;
       input.value = '';
       chat.scrollTop = chat.scrollHeight;
+
+      const typingDiv = document.createElement('div');
+      typingDiv.className = 'msg ai';
+      typingDiv.textContent = 'Typing';
+      chat.appendChild(typingDiv);
+      chat.scrollTop = chat.scrollHeight;
+
+      let dotCount = 0;
+      const maxDots = 3;
+      const typingInterval = setInterval(() => {
+        dotCount = (dotCount + 1) % (maxDots + 1);
+        typingDiv.textContent = 'Typing' + '.'.repeat(dotCount);
+        chat.scrollTop = chat.scrollHeight;
+      }, 500);
 
       try {
         const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -87,13 +160,31 @@
         });
 
         const data = await res.json();
+        clearInterval(typingInterval);
+        typingDiv.textContent = '';
+
         const reply = data.choices?.[0]?.message?.content || "❌ No reply from AI";
         const formatted = formatMarkdown(reply);
-        chat.innerHTML += `<div class="msg ai">${formatted}</div>`;
+
+        let index = 0;
+        const aiMsgDiv = document.createElement('div');
+        aiMsgDiv.className = 'msg ai';
+        chat.replaceChild(aiMsgDiv, typingDiv);
         chat.scrollTop = chat.scrollHeight;
 
+        function typeWriter() {
+          if (index < formatted.length) {
+            aiMsgDiv.innerHTML += formatted.charAt(index);
+            index++;
+            chat.scrollTop = chat.scrollHeight;
+            setTimeout(typeWriter, 20);
+          }
+        }
+        typeWriter();
+
       } catch (err) {
-        chat.innerHTML += `<div class="msg ai">❌ Error: ${escapeHtml(err.message)}</div>`;
+        clearInterval(typingInterval);
+        typingDiv.textContent = `❌ Error: ${escapeHtml(err.message)}`;
         chat.scrollTop = chat.scrollHeight;
       }
     }
